@@ -49,14 +49,15 @@ import java.util.Map;
 
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
-    private static final String TAG = "IdTokenActivity";
+    private static final String TAG = RegisterActivity.class.getSimpleName();
 
     //SignIn and FireBase Initializations
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
     private FirebaseFirestore fireStore = FirebaseFirestore.getInstance();
+    private FirebaseUser currentUser;
 
-    //UI Elements
+    //UI Components
     private Button signInButton;
     ProgressBar SignInprogressBar;
 
@@ -71,7 +72,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
     //Custom Constants
     private final static int RC_SIGN_IN=9001;
-    public boolean DEVICE_REGISTERED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,14 +119,20 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         super.onStart();
         boolean locationPermission = checkSetLocationPermission();
         checkBluetoothState();
-        SignInprogressBar.setVisibility(View.VISIBLE);
-        FirebaseUser user = mAuth.getCurrentUser();
-        checkUserDevice(user);
+        currentUser = mAuth.getCurrentUser();
+//        if(currentUser!=null){
+//            SignInprogressBar.setVisibility(View.VISIBLE);
+//            checkUserDevice(currentUser);
+//        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        if(currentUser!=null){
+            SignInprogressBar.setVisibility(View.VISIBLE);
+            checkUserDevice(currentUser);
+        }
     }
 
     private void signIn() {
@@ -148,6 +154,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 firebaseAuthWithGoogle(account.getIdToken());
             } catch (ApiException e) {
                 // Google Sign In failed, update UI appropriately
+                SignInprogressBar.setVisibility(View.GONE);
                 Toast.makeText(this,e.getMessage(),Toast.LENGTH_SHORT).show();
             }
         }
@@ -175,8 +182,8 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            checkUserDevice(user);
+                            currentUser = mAuth.getCurrentUser();
+                            checkUserDevice(currentUser);
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(RegisterActivity.this, "Sorry Authentication Failed", Toast.LENGTH_SHORT).show();
@@ -232,9 +239,9 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                     });
         }
     }
+
     private void registerUserDevice(String deviceName, String deviceAddress) {
         Map<String, Object> user = new HashMap<>();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
         String userId = currentUser.getUid();
         user.put("deviceName",deviceName);
         user.put("deviceAddress",deviceAddress);
@@ -244,7 +251,7 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
             @Override
             public void onSuccess(Void aVoid) {
                 Toast.makeText(RegisterActivity.this, "Device Registered", Toast.LENGTH_SHORT).show();
-                checkUserDevice(currentUser);
+                updateUI(currentUser,true);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override

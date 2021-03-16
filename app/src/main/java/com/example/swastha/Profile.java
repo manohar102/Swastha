@@ -18,8 +18,9 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class Profile extends Fragment {
 
-    TextView name,mail;
+    TextView name,mail,deviceName,deviceAddress;
     Button logout;
+    Bundle arg;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -32,8 +33,19 @@ public class Profile extends Fragment {
         // Inflate the layout for this fragment
         // Inflate the layout for this fragment
         ViewGroup root = (ViewGroup) inflater.inflate(R.layout.fragment_profile, container, false);
+        arg = getArguments();
         name = root.findViewById(R.id.name);
         mail = root.findViewById(R.id.mail);
+        deviceName = root.findViewById(R.id.deviceName);
+        deviceAddress = root.findViewById(R.id.deviceAddress);
+        if(arg!=null){
+            deviceName.setText(arg.getString(MainActivity.EXTRAS_DEVICE_NAME));
+            deviceAddress.setText(arg.getString(MainActivity.EXTRAS_DEVICE_ADDRESS));
+        }
+        else{
+            deviceName.setText("UnKnown");
+            deviceAddress.setText("UnKnown");
+        }
         GoogleSignInAccount signInAccount = GoogleSignIn.getLastSignedInAccount(getContext());
         if(signInAccount!=null){
             name.setText(signInAccount.getDisplayName());

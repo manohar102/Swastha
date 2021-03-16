@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import java.util.HashMap;
 
 public class BleScanActivity extends AppCompatActivity {
 //    private LeDeviceListAdapter mLeDeviceListAdapter;
+    private final static String TAG = BleScanActivity.class.getSimpleName();
     private BluetoothAdapter mBluetoothAdapter;
 
     private boolean mScanning;
@@ -51,6 +53,7 @@ public class BleScanActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_LOCATION = 1;
     private ListView devicesList;
     private Button scanningBtn;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     // Stops scanning after 10 seconds.
     private static final long SCAN_PERIOD = 10000;
@@ -77,7 +80,8 @@ public class BleScanActivity extends AppCompatActivity {
 
         // Start of BleScan
         devicesList = findViewById(R.id._dynamic);
-        scanningBtn = findViewById(R.id.ble_scan);
+//        scanningBtn = findViewById(R.id.ble_scan);
+        swipeRefreshLayout = findViewById(R.id.swipeRefeshBle);
 
         deviceScanList = new ArrayList<String>();
         deviceBleList = new ArrayList<BluetoothDevice>();
@@ -85,12 +89,12 @@ public class BleScanActivity extends AppCompatActivity {
         listAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,deviceScanList);
         devicesList.setAdapter(listAdapter);
 
-        scanningBtn.setOnClickListener(v -> {
-            if(mBluetoothAdapter!=null && mBluetoothAdapter.isEnabled()){
-                clearUI();
-                scanLeDevice(true);
-            }
-        });
+//        scanningBtn.setOnClickListener(v -> {
+//            if(mBluetoothAdapter!=null && mBluetoothAdapter.isEnabled()){
+//                clearUI();
+//                scanLeDevice(true);
+//            }
+//        });
 
         devicesList.setOnItemClickListener((parent, view, position, id) -> {
             Object device = devicesList.getItemAtPosition(position);
@@ -102,6 +106,19 @@ public class BleScanActivity extends AppCompatActivity {
             setResult(101,intent);
             finish();
         });
+
+        swipeRefreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        Log.i(TAG, "onRefresh called from SwipeRefreshLayout");
+                        if(mBluetoothAdapter!=null && mBluetoothAdapter.isEnabled()){
+                            clearUI();
+                            scanLeDevice(true);
+                        }
+                    }
+                }
+        );
     }
 
     private void clearUI(){
@@ -144,6 +161,7 @@ public class BleScanActivity extends AppCompatActivity {
 //                }
 //            }, SCAN_PERIOD);
             mBluetoothAdapter.startLeScan(mLeScanCallback);
+            swipeRefreshLayout.setRefreshing(false);
         } else {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
@@ -151,7 +169,6 @@ public class BleScanActivity extends AppCompatActivity {
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
         new BluetoothAdapter.LeScanCallback() {
-
             @Override
             public void onLeScan(final BluetoothDevice device, int rssi, byte[] scanRecord) {
                 runOnUiThread(new Runnable() {

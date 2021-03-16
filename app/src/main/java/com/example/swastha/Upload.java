@@ -36,10 +36,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Upload extends Fragment {
-    EditText bloodPressure,bloodSugar,cholestrol,heartRate;
+    EditText bloodPressure,bloodSugar,cholestrol,bodyMassIndex;
     Button predictButton;
     TextView predictionValue;
     Interpreter interpreter;
+    Bundle arg;
     private FirebaseFirestore fireStore;
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
@@ -69,7 +70,7 @@ public class Upload extends Fragment {
         bloodPressure = root.findViewById(R.id.bloodPressureIn);
         bloodSugar = root.findViewById(R.id.bloodSugarIn);
         cholestrol = root.findViewById(R.id.Cholestrol);
-        heartRate = root.findViewById(R.id.heartRate);
+        bodyMassIndex = root.findViewById(R.id.bodyMassIndex);
         predictionValue = root.findViewById(R.id.predictionValue);
 
         predictButton.setOnClickListener(new View.OnClickListener() {
@@ -78,12 +79,18 @@ public class Upload extends Fragment {
                 //cholestrol,Bp,bp,BMI,heartrate,glucose
                 String bp,bs,bmi,ch,hr;
                 float[] input = new float[6];
+                arg = getArguments();
 
                 ch = cholestrol.getText().toString();
                 bp = bloodPressure.getText().toString();
                 String[] newBp = bp.split("/");
-                bmi = "25";
-                hr = heartRate.getText().toString();
+                bmi = bodyMassIndex.getText().toString();
+                if(arg!=null){
+                    hr = arg.getString(MainActivity.EXTRAS_HEART_RATE);
+                }
+                else{
+                    hr = "90";
+                }
                 bs = bloodSugar.getText().toString();
 
                 Map<String, Object> user = new HashMap<>();

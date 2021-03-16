@@ -43,7 +43,7 @@ import java.util.UUID;
 
 public class HeartRateService extends Service {
 
-    private static final String TAG = com.example.swastha.HeartRateService.class.getSimpleName();
+    private static final String TAG = HeartRateService.class.getSimpleName();
 
     //FireStore
     private FirebaseFirestore fireStore;
@@ -145,7 +145,7 @@ public class HeartRateService extends Service {
         mAuth = FirebaseAuth.getInstance();
         currentUser = mAuth.getCurrentUser();
         HeartRate = new ArrayList<String>();
-        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Service Started", Toast.LENGTH_SHORT).show();
         if(currentUser!=null) {
             fireStore.collection("users").whereEqualTo("userUid", currentUser.getUid())
                     .limit(1).get()
